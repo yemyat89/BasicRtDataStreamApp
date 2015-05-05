@@ -1,0 +1,64 @@
+<html>
+	
+<head>
+	<title>Chart Test</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/epoch.min.css') }}">
+</head>
+
+<body>
+
+	<h1>Hello Kate</h1>
+
+	<div id="timeLineChart" class="epoch" style="width: 600px; height: 350px"></div>
+
+
+	<!-- Javascripts -->
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="{{ url_for('static', filename='js/d3.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/epoch.min.js') }}"></script>
+
+	<script type="text/javascript">
+		$( document ).ready(function() {
+
+			$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+			var currentDate = 0;
+
+			var dateNow = Math.floor((new Date()).getTime() / 1000);
+			var lineChartData = [
+				{
+					label: "Series 1",
+					values: [ {time: dateNow, y: 85} ]
+				}
+			];
+			var lineChart = $('#timeLineChart').epoch({
+				type: 'time.line',
+				data: lineChartData,
+				axes: ['left', 'bottom', 'right']
+			});
+
+			function pushData() {
+				$.getJSON($SCRIPT_ROOT + "ajaxGetDataSample", {
+	                currentDate: currentDate
+	            }, function(data) {
+	            	currentDate = data._pointer;
+	            	var newData = [];
+	            	for (i = 0; i < data.result.length; i++) {
+	            		var x = data.result[i];
+	            		newData.push({time: x.time, y: x.y});
+	        		}
+	                if (newData.length > 0) {
+	                	lineChart.push(newData);
+	                }
+	            });	
+			}
+
+			setInterval(pushData, 1000);
+			
+		});
+	</script>
+
+</body>
+
+</html>
